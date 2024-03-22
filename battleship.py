@@ -1,10 +1,16 @@
 #Run with py -3 battleship.py
 #Python Version 3.8.10 (3 May 2021) and above
+#pip install pygame <-- for audio
 
 from colorama import Fore
 import random
 import time
 import os
+import pygame
+pygame.mixer.init()
+pygame.mixer.music.load("Strategy Background Music  No Copyright Music  Free Music.mp3") # https://www.youtube.com/watch?v=BMGWF6U6d7c 
+pygame.mixer.music.play(-1)  # loop indefinitely
+pygame.mixer.music.set_volume(0.01)
 
 #Grid
 playerGrid = []
@@ -76,10 +82,10 @@ def placeShip(ship, size, grid, isComputer):
     x, y = None, None
     notValidPlacement = True
     while notValidPlacement:
-        if isComputer:
+        if isComputer: #used to skip player ship placement
             x, y = random.randint(0, len(grid) - 1), random.randint(0, len(grid[0]) - 1) #https://docs.python.org/3/library/random.html
             direction = random.choice(["h", "v"])
-        else:
+        else: #normal player ship placement
             print(f"Enter starting coordinates for your ship of size {size} (format: x y)")
             coordinates = input().split()
             if len(coordinates) != 2 or not all(i.isdigit() for i in coordinates):
@@ -224,21 +230,51 @@ def printGrid(grid): #https://pypi.org/project/colorama/
                 print(Fore.RED + col, end=" ")
         print(Fore.RESET)
 
+def resetGame():
+    #Grid
+    global playerGrid, computerGrid, blankComputerGrid, blankPlayerGrid, gridSize
+    playerGrid = []
+    computerGrid = []
+    blankComputerGrid = []
+    blankPlayerGrid = []
+    gridSize = None
+    
+    #Ships
+    global playerCarrier, playerBattlship, playerCruiser, playerSubmarine, playerDestroyer
+    global computerCarrier, computerBattlship, computerCruiser, computerSubmarine, computerDestroyer
+    playerCarrier = []     # 5 holes
+    playerBattlship = []   # 4 holes
+    playerCruiser = []     # 3 holes
+    playerSubmarine = []   # 3 holes
+    playerDestroyer = []   # 2 holes
+    computerCarrier = []   # 5 holes
+    computerBattlship = [] # 4 holes
+    computerCruiser = []   # 3 holes
+    computerSubmarine = [] # 3 holes
+    computerDestroyer = [] # 2 holes
+    
+
 def main():
     clear_console()
     global gridSize
-    print("Welcome to Battleship!")
-    while gridSize != "s" and gridSize != "m" and gridSize != "l":
-        print("Select a grid size: small, medium, or large")
-        print("Enter s for small, m for medium, or l for large")
-        gridSize = input()
+    gameLoop = None
 
-    initializeGrid(playerGrid, gridSize)
-    initializeGrid(computerGrid, gridSize)
-    initializeGrid(blankComputerGrid, gridSize)
-    initializeGrid(blankPlayerGrid, gridSize)
-    placeAllShips(skipPlacement=True)               #toggle this on and off to skip player ship placement
-    playGame(autoplay=True)                         #toggle this on and off to autoplay the game (player does not need to input coordinates)
+    print("Welcome to Battleship!")
+    while gameLoop != "q":
+        while gridSize != "s" and gridSize != "m" and gridSize != "l":
+            print("Select a grid size: small, medium, or large")
+            print("Enter s for small, m for medium, or l for large")
+            gridSize = input()
+
+        initializeGrid(playerGrid, gridSize)
+        initializeGrid(computerGrid, gridSize)
+        initializeGrid(blankComputerGrid, gridSize)
+        initializeGrid(blankPlayerGrid, gridSize)
+        placeAllShips(skipPlacement=True)               #toggle this on and off to skip player ship placement
+        playGame(autoplay=True)                         #toggle this on and off to autoplay the game (player does not need to input coordinates)
+        resetGame()
+        print("Press q to quit or any other key to play again")
+        gameLoop = input()
 if __name__ == "__main__":
     main()
 
