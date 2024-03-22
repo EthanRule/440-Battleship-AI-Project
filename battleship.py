@@ -1,9 +1,16 @@
 #Run with py -3 battleship.py
+#Python Version 3.8.10 (3 May 2021) and above
+
+from colorama import Fore
 import random
+import time
+import os
 
 #Grid
 playerGrid = []
 computerGrid = []
+blankComputerGrid = []
+blankPlayerGrid = []
 gridSize = None
 
 #Ships
@@ -18,6 +25,9 @@ computerBattlship = [] # 4 holes
 computerCruiser = []   # 3 holes
 computerSubmarine = [] # 3 holes
 computerDestroyer = [] # 2 holes
+
+def clear_console():
+    os.system('cls')
 
 def initializeGrid(grid, gridSize):
     rows, cols = None, None
@@ -35,23 +45,25 @@ def initializeGrid(grid, gridSize):
             grid.append(col)
     else:
         print("Invalid grid size")
-
-def printGrid(grid):
-    for row in grid:
-        print(row)
-
-def placeAllShips():
+def placeAllShips(skipPlacement):
     #player ship placement
-    placeShip(playerCarrier, 5, playerGrid, isComputer=False)
-    printGrid(playerGrid)
-    placeShip(playerBattlship, 4, playerGrid, isComputer=False)
-    printGrid(playerGrid)
-    placeShip(playerCruiser, 3, playerGrid, isComputer=False)
-    printGrid(playerGrid)
-    placeShip(playerSubmarine, 3, playerGrid, isComputer=False)
-    printGrid(playerGrid)
-    placeShip(playerDestroyer, 2, playerGrid, isComputer=False)
-    printGrid(playerGrid)
+    if skipPlacement:
+        placeShip(playerCarrier, 5, playerGrid, isComputer=True)
+        placeShip(playerBattlship, 4, playerGrid, isComputer=True)
+        placeShip(playerCruiser, 3, playerGrid, isComputer=True)
+        placeShip(playerSubmarine, 3, playerGrid, isComputer=True)
+        placeShip(playerDestroyer, 2, playerGrid, isComputer=True)
+    else:
+        placeShip(playerCarrier, 5, playerGrid, isComputer=False)
+        printGrid(playerGrid)
+        placeShip(playerBattlship, 4, playerGrid, isComputer=False)
+        printGrid(playerGrid)
+        placeShip(playerCruiser, 3, playerGrid, isComputer=False)
+        printGrid(playerGrid)
+        placeShip(playerSubmarine, 3, playerGrid, isComputer=False)
+        printGrid(playerGrid)
+        placeShip(playerDestroyer, 2, playerGrid, isComputer=False)
+        printGrid(playerGrid)
 
     #computer ship placement
     placeShip(computerCarrier, 5, computerGrid, isComputer=True)
@@ -112,17 +124,132 @@ def placeShip(ship, size, grid, isComputer):
                 ship.append([x + i, y])
         notValidPlacement = False
 
+def checkWin(grid):
+    hits = 0
+    for row in grid:
+        for col in row:
+            if col == "X":
+                hits += 1
+    if hits == 17:
+        return True
+    else:
+        return False
+
+def playGame(autoplay):
+    while True:
+        clear_console()
+        print("Computer")
+        printGrid(blankComputerGrid)
+        print("Player")
+        printGrid(playerGrid)
+        if autoplay:
+            time.sleep(0.1) #delay for autoplay
+            x, y = random.randint(0, len(computerGrid) - 1), random.randint(0, len(computerGrid[0]) - 1)
+            if isinstance(computerGrid[x][y], int) and computerGrid[x][y] > 0:
+                print("Hit!")
+                computerGrid[x][y] = "X"
+                blankComputerGrid[x][y] = "X"
+            else:
+                print("Miss!")
+            if checkWin(blankComputerGrid):
+                clear_console()
+                print("Computer")
+                printGrid(blankComputerGrid)
+                print("Player")
+                printGrid(playerGrid)
+                print("Hit!")
+                print("You win!")
+                break
+        else:
+            print("Enter coordinates to attack")
+            coordinates = input().split()
+            if len(coordinates) != 2 or not all(i.isdigit() for i in coordinates):
+                print("\033[91mInvalid input.\033[0m Please enter two valid integers separated by a space.")
+                print("Press enter to continue")
+                input()
+                continue
+            x, y = map(int, coordinates)
+            if x < 0 or x >= len(computerGrid) or y < 0 or y >= len(computerGrid[0]):
+                print("\033[91mInvalid input.\033[0m Please enter coordinates within the grid.")
+                print("Press enter to continue")
+                input()
+                continue
+            if isinstance(computerGrid[x][y], int) and computerGrid[x][y] > 0:
+                print("Hit!")
+                computerGrid[x][y] = "X"
+                blankComputerGrid[x][y] = "X"
+            else:
+                print("Miss!")
+            if checkWin(blankComputerGrid):
+                print("You win!")
+                break
+        #computer's turn # IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE #
+        x, y = random.randint(0, len(playerGrid) - 1), random.randint(0, len(playerGrid[0]) - 1)
+        if isinstance(playerGrid[x][y], int) and playerGrid[x][y] > 0:
+            print("Computer hit!")
+            playerGrid[x][y] = "X"
+            blankPlayerGrid[x][y] = "X"
+        else:
+            print("Computer miss!")
+        # IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE #
+        if checkWin(blankPlayerGrid):
+            clear_console()
+            print("Computer")
+            printGrid(blankComputerGrid)
+            print("Player")
+            printGrid(playerGrid)
+            print("Computer hit!")
+            print("Computer wins!")
+            break
+        if autoplay:
+            continue
+        else:
+            print("Press enter to continue")
+            input()
+
+def printGrid(grid): #https://pypi.org/project/colorama/
+    print ("  ", end="")
+    for i in range(len(grid[0])):
+        print(Fore.YELLOW + str(i), end=" ")
+    print(Fore.RESET)
+    for i, row in enumerate(grid):
+        print(Fore.YELLOW + str(i), end="")
+        print(Fore.RESET, end=" ")
+        for col in row:
+            if col == 0:
+                print(Fore.BLUE + '~', end=" ")
+            elif col == 2 or col == 3 or col == 4 or col == 5:
+                print(Fore.GREEN + str(col), end=" ")
+            elif col == "X":
+                print(Fore.RED + col, end=" ")
+        print(Fore.RESET)
 
 def main():
+    clear_console()
     global gridSize
+    print("Welcome to Battleship!")
     while gridSize != "s" and gridSize != "m" and gridSize != "l":
-        print("Welcome to Battleship!")
         print("Select a grid size: small, medium, or large")
         print("Enter s for small, m for medium, or l for large")
         gridSize = input()
 
     initializeGrid(playerGrid, gridSize)
     initializeGrid(computerGrid, gridSize)
-    placeAllShips()
+    initializeGrid(blankComputerGrid, gridSize)
+    initializeGrid(blankPlayerGrid, gridSize)
+    placeAllShips(skipPlacement=True)               #toggle this on and off to skip player ship placement
+    playGame(autoplay=True)                         #toggle this on and off to autoplay the game (player does not need to input coordinates)
 if __name__ == "__main__":
     main()
+
+
+        
+
+
+
+
+
+
+
+
+
