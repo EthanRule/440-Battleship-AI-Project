@@ -2,11 +2,11 @@
 #Python Version 3.8.10 (3 May 2021) and above
 #pip install pygame <-- for audio
 
-from colorama import Fore
+from colorama import Fore #pip install colorama or py -3 -m pip install colorama
 import random
 import time
 import os
-import pygame
+import pygame #pip install pygame or py -3 -m pip install pygame
 pygame.mixer.init()
 pygame.mixer.music.load("Strategy Background Music  No Copyright Music  Free Music.mp3") # https://www.youtube.com/watch?v=BMGWF6U6d7c 
 pygame.mixer.music.play(-1)  # loop indefinitely
@@ -140,6 +140,13 @@ def checkWin(grid):
         return True
     else:
         return False
+    
+hits = []
+def hunt_targetAlgorithm():
+    if not hits: #hunt
+        while True:
+            x, y = random.randint(0, len(playerGrid) - 1), random.randint(0, len(playerGrid[0]) - 1)
+    else: #target
 
 def playGame(autoplay):
     while True:
