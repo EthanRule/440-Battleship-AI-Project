@@ -35,10 +35,14 @@ computerDestroyer = [] # 2 holes
 computer_total_turns = 0
 computer_total_hits = 0
 computer_total_misses = 0
+computer_tried_coordinates = set()
 
 player_total_turns = 0
 player_total_hits = 0
 player_total_misses = 0
+player_tried_coordinates = set()
+
+log_messages = []
 
 def clear_console():
     os.system('cls')
@@ -151,24 +155,35 @@ def checkWin(grid):
     
 hits = []
 def hunt_targetAlgorithm():
+    global computer_tried_coordinates
+    global log_messages
     if not hits:  # hunt
         while True:
-            x, y = random.randint(0, len(playerGrid) - 1), random.randint(0, len(playerGrid[0]) - 1)
-            if playerGrid[x][y] != "X" and playerGrid[x][y] != "O":
+            x, y = random.randint(0, len(blankPlayerGrid) - 1), random.randint(0, len(blankPlayerGrid[0]) - 1)
+            if (x, y) not in computer_tried_coordinates and blankPlayerGrid[x][y] != "X" and blankPlayerGrid[x][y] != "O":
+                computer_tried_coordinates.add((x, y))
+                log_messages.append(f"Hunting: Selected coordinates ({x}, {y})")
                 return x, y
     else:  # target
         x, y = hits[0]
-        if x - 1 >= 0 and playerGrid[x - 1][y] != "X" and playerGrid[x - 1][y] != "O":
+        log_messages.append(f"Targeting: Starting from coordinates ({x}, {y})")
+        if x - 1 >= 0 and (x - 1, y) not in computer_tried_coordinates and blankPlayerGrid[x - 1][y] != "X" and blankPlayerGrid[x - 1][y] != "O":
+            computer_tried_coordinates.add((x - 1, y))
             return x - 1, y
-        elif x + 1 < len(playerGrid) and playerGrid[x + 1][y] != "X" and playerGrid[x + 1][y] != "O":
+        elif x + 1 < len(blankPlayerGrid) and (x + 1, y) not in computer_tried_coordinates and blankPlayerGrid[x + 1][y] != "X" and blankPlayerGrid[x + 1][y] != "O":
+            computer_tried_coordinates.add((x + 1, y))
             return x + 1, y
-        elif y - 1 >= 0 and playerGrid[x][y - 1] != "X" and playerGrid[x][y - 1] != "O":
+        elif y - 1 >= 0 and (x, y - 1) not in computer_tried_coordinates and blankPlayerGrid[x][y - 1] != "X" and blankPlayerGrid[x][y - 1] != "O":
+            computer_tried_coordinates.add((x, y - 1))
             return x, y - 1
-        elif y + 1 < len(playerGrid[0]) and playerGrid[x][y + 1] != "X" and playerGrid[x][y + 1] != "O":
+        elif y + 1 < len(blankPlayerGrid[0]) and (x, y + 1) not in computer_tried_coordinates and blankPlayerGrid[x][y + 1] != "X" and blankPlayerGrid[x][y + 1] != "O":
+            computer_tried_coordinates.add((x, y + 1))
             return x, y + 1
         else:
             hits.pop(0)
-            return hunt_targetAlgorithm()
+            if not hits:  # Switch back to hunting mode
+                log_messages.append("Switching back to hunting mode")
+                return hunt_targetAlgorithm()
         
 
 def playGame(autoplay):
@@ -232,9 +247,11 @@ def playGame(autoplay):
             print("Computer hit!")
             playerGrid[x][y] = "X"
             blankPlayerGrid[x][y] = "X"
+            hits.append((x, y))
             computer_total_hits += 1
         else:
             print("Computer miss!")
+            blankPlayerGrid[x][y] = "0"
             computer_total_misses += 1
         computer_total_turns += 1
         # IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE #
@@ -327,6 +344,9 @@ def main():
         playGame(autoplay=True)                         #toggle this on and off to autoplay the game (player does not need to input coordinates)
         resetGame()
         printStatistics()
+        print("\n -- LOG MESSAGES FROM AI --\n")
+        for message in log_messages:
+            print(message)
         print("Press q to quit or any other key to play again")
         gameLoop = input()
 if __name__ == "__main__":
