@@ -32,6 +32,14 @@ computerCruiser = []   # 3 holes
 computerSubmarine = [] # 3 holes
 computerDestroyer = [] # 2 holes
 
+computer_total_turns = 0
+computer_total_hits = 0
+computer_total_misses = 0
+
+player_total_turns = 0
+player_total_hits = 0
+player_total_misses = 0
+
 def clear_console():
     os.system('cls')
 
@@ -143,12 +151,28 @@ def checkWin(grid):
     
 hits = []
 def hunt_targetAlgorithm():
-    if not hits: #hunt
+    if not hits:  # hunt
         while True:
             x, y = random.randint(0, len(playerGrid) - 1), random.randint(0, len(playerGrid[0]) - 1)
-    else: #target
+            if playerGrid[x][y] != "X" and playerGrid[x][y] != "O":
+                return x, y
+    else:  # target
+        x, y = hits[0]
+        if x - 1 >= 0 and playerGrid[x - 1][y] != "X" and playerGrid[x - 1][y] != "O":
+            return x - 1, y
+        elif x + 1 < len(playerGrid) and playerGrid[x + 1][y] != "X" and playerGrid[x + 1][y] != "O":
+            return x + 1, y
+        elif y - 1 >= 0 and playerGrid[x][y - 1] != "X" and playerGrid[x][y - 1] != "O":
+            return x, y - 1
+        elif y + 1 < len(playerGrid[0]) and playerGrid[x][y + 1] != "X" and playerGrid[x][y + 1] != "O":
+            return x, y + 1
+        else:
+            hits.pop(0)
+            return hunt_targetAlgorithm()
+        
 
 def playGame(autoplay):
+    global computer_total_turns, computer_total_hits, computer_total_misses, player_total_turns, player_total_hits, player_total_misses
     while True:
         clear_console()
         print("Computer")
@@ -156,14 +180,16 @@ def playGame(autoplay):
         print("Player")
         printGrid(playerGrid)
         if autoplay:
-            time.sleep(0.1) #delay for autoplay
             x, y = random.randint(0, len(computerGrid) - 1), random.randint(0, len(computerGrid[0]) - 1)
             if isinstance(computerGrid[x][y], int) and computerGrid[x][y] > 0:
                 print("Hit!")
                 computerGrid[x][y] = "X"
                 blankComputerGrid[x][y] = "X"
+                player_total_hits += 1
             else:
                 print("Miss!")
+                player_total_misses += 1
+            player_total_turns += 1
             if checkWin(blankComputerGrid):
                 clear_console()
                 print("Computer")
@@ -191,19 +217,26 @@ def playGame(autoplay):
                 print("Hit!")
                 computerGrid[x][y] = "X"
                 blankComputerGrid[x][y] = "X"
+                player_total_hits += 1
             else:
                 print("Miss!")
+                player_total_misses += 1
+            player_total_turns += 1
             if checkWin(blankComputerGrid):
                 print("You win!")
                 break
         #computer's turn # IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE #
-        x, y = random.randint(0, len(playerGrid) - 1), random.randint(0, len(playerGrid[0]) - 1)
+        x, y = hunt_targetAlgorithm()
+        print("X", x, "Y", y)
         if isinstance(playerGrid[x][y], int) and playerGrid[x][y] > 0:
             print("Computer hit!")
             playerGrid[x][y] = "X"
             blankPlayerGrid[x][y] = "X"
+            computer_total_hits += 1
         else:
             print("Computer miss!")
+            computer_total_misses += 1
+        computer_total_turns += 1
         # IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE ## IMPLEMENT COMPUTER AI HERE #
         if checkWin(blankPlayerGrid):
             clear_console()
@@ -258,7 +291,20 @@ def resetGame():
     computerBattlship = [] # 4 holes
     computerCruiser = []   # 3 holes
     computerSubmarine = [] # 3 holes
-    computerDestroyer = [] # 2 holes
+    computerDestroyer = [] # 2 hole
+
+def printStatistics():
+    print("\n-- Computer Statistics --")
+    print("Total turns:", computer_total_turns)
+    print("Total hits:", computer_total_hits)
+    print("Total misses:", computer_total_misses)
+    print("\n-- Player Statistics --")
+    print("Total turns:", player_total_turns)
+    print("Total hits:", player_total_hits)
+    print("Total misses:", player_total_misses)
+    print("Press enter to continue")
+    input()
+
     
 
 def main():
@@ -280,6 +326,7 @@ def main():
         placeAllShips(skipPlacement=True)               #toggle this on and off to skip player ship placement
         playGame(autoplay=True)                         #toggle this on and off to autoplay the game (player does not need to input coordinates)
         resetGame()
+        printStatistics()
         print("Press q to quit or any other key to play again")
         gameLoop = input()
 if __name__ == "__main__":
