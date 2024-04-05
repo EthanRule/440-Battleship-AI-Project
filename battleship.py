@@ -32,6 +32,9 @@ computerCruiser = []   # 3 holes
 computerSubmarine = [] # 3 holes
 computerDestroyer = [] # 2 holes
 
+#Computer Coordinate Relationship Dictionary: the key is a coordinate set (row, column) and the value is a list of coordinate sets
+computerRelDic = {}
+
 def clear_console():
     os.system('cls')
 
@@ -51,6 +54,33 @@ def initializeGrid(grid, gridSize):
             grid.append(col)
     else:
         print("Invalid grid size")
+
+def initializeRelDic(relDic, gridSize):
+    rows, cols = None, None
+    if gridSize == "s":
+        rows, cols = 8, 8
+    elif gridSize == "m":
+        rows, cols = 10, 10
+    elif gridSize == "l":
+        rows, cols = 15, 15
+    if rows != None and cols != None:
+        for i in range(0, rows):
+            for j in range(0, cols):
+                coord = (i, j)
+                print(coord)
+                neighbors = []
+                if i > 0:
+                    neighbors.append((i-1, j))
+                if i < rows-1:
+                    neighbors.append((i+1, j))
+                if j > 0:
+                    neighbors.append((i, j-1))
+                if j < cols-1:
+                    neighbors.append((i, j+1))
+                relDic[coord] = neighbors
+    else:
+        print("Invalid grid size")
+
 def placeAllShips(skipPlacement):
     #player ship placement
     if skipPlacement:
@@ -270,6 +300,7 @@ def main():
         initializeGrid(computerGrid, gridSize)
         initializeGrid(blankComputerGrid, gridSize)
         initializeGrid(blankPlayerGrid, gridSize)
+        initializeRelDic(computerRelDic, gridSize)
         placeAllShips(skipPlacement=True)               #toggle this on and off to skip player ship placement
         playGame(autoplay=True)                         #toggle this on and off to autoplay the game (player does not need to input coordinates)
         resetGame()
