@@ -1,16 +1,10 @@
-#Run with py -3 battleship.py
-#Python Version 3.8.10 (3 May 2021) and above
-#pip install pygame <-- for audio
-
 from colorama import Fore
 import random
 import time
-import os
-import pygame
-pygame.mixer.init()
-pygame.mixer.music.load("Strategy Background Music  No Copyright Music  Free Music.mp3") # https://www.youtube.com/watch?v=BMGWF6U6d7c 
-pygame.mixer.music.play(-1)  # loop indefinitely
-pygame.mixer.music.set_volume(0.01)
+from misc.printGrid import printGrid
+from misc.clearConsole import clear_console
+from misc.checkWin import checkWin
+from misc.initMusic import initMusic
 
 #Grid
 playerGrid = []
@@ -34,9 +28,6 @@ computerDestroyer = [] # 2 holes
 
 #Computer Coordinate Relationship Dictionary: the key is a coordinate set (row, column) and the value is a list of coordinate sets
 computerRelDic = {}
-
-def clear_console():
-    os.system('cls')
 
 def initializeGrid(grid, gridSize):
     rows, cols = None, None
@@ -82,31 +73,18 @@ def initializeRelDic(relDic, gridSize):
         print("Invalid grid size")
 
 def placeAllShips(skipPlacement):
-    #player ship placement
-    if skipPlacement:
-        placeShip(playerCarrier, 5, playerGrid, isComputer=True)
-        placeShip(playerBattlship, 4, playerGrid, isComputer=True)
-        placeShip(playerCruiser, 3, playerGrid, isComputer=True)
-        placeShip(playerSubmarine, 3, playerGrid, isComputer=True)
-        placeShip(playerDestroyer, 2, playerGrid, isComputer=True)
-    else:
-        placeShip(playerCarrier, 5, playerGrid, isComputer=False)
-        printGrid(playerGrid)
-        placeShip(playerBattlship, 4, playerGrid, isComputer=False)
-        printGrid(playerGrid)
-        placeShip(playerCruiser, 3, playerGrid, isComputer=False)
-        printGrid(playerGrid)
-        placeShip(playerSubmarine, 3, playerGrid, isComputer=False)
-        printGrid(playerGrid)
-        placeShip(playerDestroyer, 2, playerGrid, isComputer=False)
-        printGrid(playerGrid)
+    ships = [(playerCarrier, 5), (playerBattlship, 4), (playerCruiser, 3), (playerSubmarine, 3), (playerDestroyer, 2)]
+    computerShips = [(computerCarrier, 5), (computerBattlship, 4), (computerCruiser, 3), (computerSubmarine, 3), (computerDestroyer, 2)]
 
-    #computer ship placement
-    placeShip(computerCarrier, 5, computerGrid, isComputer=True)
-    placeShip(computerBattlship, 4, computerGrid, isComputer=True)
-    placeShip(computerCruiser, 3, computerGrid, isComputer=True)
-    placeShip(computerSubmarine, 3, computerGrid, isComputer=True)
-    placeShip(computerDestroyer, 2, computerGrid, isComputer=True)
+    #Place player ships
+    for ship, size in ships:
+        placeShip(ship, size, playerGrid, isComputer=skipPlacement)
+        if not skipPlacement:
+            printGrid(playerGrid)
+
+    #Place computer ships
+    for ship, size in computerShips:
+        placeShip(ship, size, computerGrid, isComputer=True)
 
 def placeShip(ship, size, grid, isComputer):
     x, y = None, None
@@ -160,17 +138,6 @@ def placeShip(ship, size, grid, isComputer):
                 ship.append([x + i, y])
         notValidPlacement = False
 
-def checkWin(grid):
-    hits = 0
-    for row in grid:
-        for col in row:
-            if col == "X":
-                hits += 1
-    if hits == 17:
-        return True
-    else:
-        return False
-
 def playGame(autoplay):
     while True:
         clear_console()
@@ -179,7 +146,7 @@ def playGame(autoplay):
         print("Player")
         printGrid(playerGrid)
         if autoplay:
-            time.sleep(0.1) #delay for autoplay
+            time.sleep(0.1) #delay for autoplay this will probably need to be removed
             x, y = random.randint(0, len(computerGrid) - 1), random.randint(0, len(computerGrid[0]) - 1)
             if isinstance(computerGrid[x][y], int) and computerGrid[x][y] > 0:
                 print("Hit!")
@@ -243,23 +210,6 @@ def playGame(autoplay):
             print("Press enter to continue")
             input()
 
-def printGrid(grid): #https://pypi.org/project/colorama/
-    print ("  ", end="")
-    for i in range(len(grid[0])):
-        print(Fore.YELLOW + str(i), end=" ")
-    print(Fore.RESET)
-    for i, row in enumerate(grid):
-        print(Fore.YELLOW + str(i), end="")
-        print(Fore.RESET, end=" ")
-        for col in row:
-            if col == 0:
-                print(Fore.BLUE + '~', end=" ")
-            elif col == 2 or col == 3 or col == 4 or col == 5:
-                print(Fore.GREEN + str(col), end=" ")
-            elif col == "X":
-                print(Fore.RED + col, end=" ")
-        print(Fore.RESET)
-
 def resetGame():
     #Grid
     global playerGrid, computerGrid, blankComputerGrid, blankPlayerGrid, gridSize
@@ -286,6 +236,7 @@ def resetGame():
 
 def main():
     clear_console()
+    initMusic()
     global gridSize
     gameLoop = None
 
@@ -306,17 +257,6 @@ def main():
         resetGame()
         print("Press q to quit or any other key to play again")
         gameLoop = input()
+
 if __name__ == "__main__":
     main()
-
-
-        
-
-
-
-
-
-
-
-
-
