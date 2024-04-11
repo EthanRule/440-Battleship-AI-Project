@@ -6,7 +6,6 @@ from misc.clearConsole import clear_console
 from misc.checkWin import checkWin
 from misc.initMusic import initMusic
 
-
 #Grid
 playerGrid = []
 computerGrid = []
