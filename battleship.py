@@ -2,13 +2,12 @@ from colorama import Fore
 import random
 import time
 import pygame
-pygame.mixer.init()
-pygame.mixer.music.load("Strategy Background Music  No Copyright Music  Free Music.mp3") # https://www.youtube.com/watch?v=BMGWF6U6d7c 
-pygame.mixer.music.play(-1)  # loop indefinitely
-pygame.mixer.music.set_volume(0.01)
 from misc.printGrid import printGrid
 from misc.clearConsole import clear_console
 from misc.checkWin import checkWin
+from misc.initMusic import initMusic
+
+initMusic()
 
 #Grid
 playerGrid = []
@@ -150,7 +149,7 @@ def playGame(autoplay):
         print("Player")
         printGrid(playerGrid)
         if autoplay:
-            time.sleep(0.1) #delay for autoplay
+            time.sleep(0.1) #delay for autoplay this will probably need to be removed
             x, y = random.randint(0, len(computerGrid) - 1), random.randint(0, len(computerGrid[0]) - 1)
             if isinstance(computerGrid[x][y], int) and computerGrid[x][y] > 0:
                 print("Hit!")
@@ -260,5 +259,6 @@ def main():
         resetGame()
         print("Press q to quit or any other key to play again")
         gameLoop = input()
+
 if __name__ == "__main__":
     main()
