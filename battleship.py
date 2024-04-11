@@ -1,13 +1,11 @@
 from colorama import Fore
 import random
 import time
-import pygame
 from misc.printGrid import printGrid
 from misc.clearConsole import clear_console
 from misc.checkWin import checkWin
 from misc.initMusic import initMusic
 
-initMusic()
 
 #Grid
 playerGrid = []
@@ -239,6 +237,7 @@ def resetGame():
 
 def main():
     clear_console()
+    initMusic()
     global gridSize
     gameLoop = None
 
