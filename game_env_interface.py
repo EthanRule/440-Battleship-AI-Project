@@ -15,7 +15,6 @@ class Game:
         self.defense_board = DefenseBoard(self.size, self.ships)  # Initialize defense board
         self.attack_board = AttackBoard(self.defense_board)  # Initialize attack board
         self.simulate_board = SimulationBoard(self.attack_board)  # Initialize simulation board
-
         self.attack_board.print_board("=Initial State=")  # Print initial state of the attack board
 
         self.count = 0  # Counter to track the number of moves made by the agent

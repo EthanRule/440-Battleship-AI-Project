@@ -65,6 +65,10 @@ def get_player_input(player_env):
     while True:
         ltr, nbr = input("Enter letter: ").upper(), input("Enter number: ")
         try:
+            if len(ltr) > 1 or len(nbr) > 1:
+                raise ValueError("Input length should be 1.")
+            if ltr < 'A' or ltr > 'J' or int(nbr) < 1 or int(nbr) > 10:
+                raise ValueError("Letter should be from A-J and number should be from 1-10.")
             x, y = letter_to_coords(ltr, nbr)
             if player_env.attack_board.get_board()[x, y] == 0:
                 return x, y
