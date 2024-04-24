@@ -50,7 +50,6 @@ def player_turn(player_env, autoplay):
     """
     p_move = np.zeros(shape=[player_env.size, player_env.size])
     x, y = get_player_input(player_env, autoplay)
-    print(x, y)
     p_move[x, y] = 1
     return player_env.step(p_move)
 
@@ -77,7 +76,8 @@ def get_player_input(player_env, autoplay):
             if player_env.attack_board.get_board()[x, y] == 0:
                 return x, y
             else:
-                print("This position has already been targeted. Try again.")
+                if not autoplay:
+                    print("This position has already been targeted. Try again.")
         except ValueError:
             print("Invalid input. Please enter a valid letter and number.")
 
