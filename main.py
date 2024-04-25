@@ -9,7 +9,7 @@ import random
 winner = {(True, False): 'Computer',
           (False, True): 'Player'}
 
-def init_game(size, ships, samples, autoplay):
+def init_game(size, ships, samples, autoplay, ai_type):
     """
     Initialize and run a game of Battleship.
 
@@ -20,12 +20,12 @@ def init_game(size, ships, samples, autoplay):
     """
     # Initialize AI and player game environments
     ai_env = Game(size, ships)
-    computer = AI(ai_env, samples)
+    computer = AI(ai_env, samples, ai_type)
     player_env = Game(size, ships)
 
     # Game loop until a player wins
     while True:
-        c_state, c_outcome, c_done = computer.move()
+        c_state, c_outcome, c_done = computer.move(ships)
         p_state, p_outcome, p_done = player_turn(player_env, autoplay)
 
         # Display game state after each turn
@@ -87,12 +87,19 @@ if __name__ == '__main__':
     parser.add_argument('--ship_sizes', help='Array of ship sizes to randomly place, default: "5,4,3,3,2"', default='5,4,3,3,2')
     parser.add_argument('--monte_carlo_samples', type=int, help='The number of samples to get the algorithm to do, default: 10000', default=10000)
     parser.add_argument('--autoplay', help='Whether to autoplay the game or not, default: False', action='store_true')
+    parser.add_argument('--ai_type', help='The type of AI to use, default: "monte_carlo"', default='monte_carlo')
     args = parser.parse_args()
 
     try:
         print("Welcome to Battleship!")
         print("Chosen args: ", args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples)
-        init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay)
+        if args.ai_type == 'monte_carlo':
+            init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
+        elif args.ai_type == 'hunt_target':
+            init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
+        else:
+            print("Invalid AI type!")
+            exit(1)
     except:
         print("Incorrect Args!")
         exit(1)

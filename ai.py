@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils import *
 
 class AI:
-    def __init__(self, env, samples, priority=5):
+    def __init__(self, env, samples, ai_type, priority=5):
         """
         Initialize AI object.
 
@@ -15,6 +15,7 @@ class AI:
         """
         self.env = env
         self.move_sim = samples
+        self.ai_type = ai_type
         self.priority = priority
 
     def eval_model(self, evals):
@@ -61,6 +62,42 @@ class AI:
             plt.close(fig)
 
         return percentages
+    
+    def hunt_target(self, attack_board, ships):
+        """
+        Implement the Hunt/Target algorithm for Battleship.
+
+        Args:
+            attack_board (AttackBoard): The attack board.
+            ships (list): List of ship lengths.
+            _ (str): Placeholder for consistency with monte_carlo method.
+
+        Returns:
+            np.ndarray: Array of probabilities for each square on the board.
+        """
+        probs = np.zeros((attack_board.size, attack_board.size))
+
+        # If there are hits that have not been part of a destroyed ship, target them
+        for x, y in attack_board.hits:
+            if attack_board.get_board()[x, y] != attack_board.inv_square_states['destroyed']:
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    if 0 <= x + dx < attack_board.size and 0 <= y + dy < attack_board.size:
+                        probs[x + dx, y + dy] += 1
+
+        # Hunt for ships. Checks diagonally for ships
+        if np.sum(probs) == 0:
+            for ship in ships:
+                for x in range(attack_board.size):
+                    for y in range(attack_board.size):
+                        if x + ship <= attack_board.size:
+                            if all(attack_board.get_board()[x + dx, y] == attack_board.inv_square_states['unknown'] for dx in range(ship)):
+                                for dx in range(ship):
+                                    probs[x + dx, y] += 1
+                        if y + ship <= attack_board.size:
+                            if all(attack_board.get_board()[x, y + dy] == attack_board.inv_square_states['unknown'] for dy in range(ship)):
+                                for dy in range(ship):
+                                    probs[x, y + dy] += 1
+        return probs
 
     def run(self, r_count):
         """
@@ -87,12 +124,17 @@ class AI:
         score = np.count_nonzero(s.get_board() == 0)
         print(f"SCORE: {score}")
         return score
-
-    def move(self):
+    
+    def move(self, ships):
         """
         Make a move using the Monte Carlo simulation algorithm.
 
         Returns:
             tuple: Result of the move.
         """
-        return self.env.step(self.monte_carlo(self.env.attack_board, ''))
+        if self.ai_type == 'monte_carlo':
+            return self.env.step(self.monte_carlo(self.env.attack_board, ''))
+        elif self.ai_type == 'hunt_target':
+            return self.env.step(self.hunt_target(self.env.attack_board, ships))
+        else:
+            raise ValueError(f"Invalid AI type: {self.ai_type}")
