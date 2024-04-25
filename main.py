@@ -4,6 +4,7 @@ from utils import letter_to_coords
 import argparse
 import numpy as np
 import random
+import time
 
 # Dictionary to map game outcomes to winners
 winner = {(True, False): 'Computer',
@@ -23,10 +24,29 @@ def init_game(size, ships, samples, autoplay, ai_type):
     computer = AI(ai_env, samples, ai_type)
     player_env = Game(size, ships)
 
+    # Initialize match statistics
+    c_turn_times = []
+    p_turn_times = []
+    c_hits = 0
+    p_hits = 0
+    c_turns = 0
+    p_turns = 0
+
     # Game loop until a player wins
     while True:
+        start_time = time.time()
         c_state, c_outcome, c_done = computer.move(ships)
+        c_turn_times.append(time.time() - start_time)
+        c_turns += 1
+        if c_outcome == 'hit':
+            c_hits += 1
+        
+        start_time = time.time()
         p_state, p_outcome, p_done = player_turn(player_env, autoplay)
+        p_turn_times.append(time.time() - start_time)
+        p_turns += 1
+        if p_outcome == 'hit':
+            p_hits += 1
 
         # Display game state after each turn
         c_state.print_board(f"=Your Board (Computer Target Ships)= [Last Outcome: {c_outcome}]")
@@ -34,9 +54,11 @@ def init_game(size, ships, samples, autoplay, ai_type):
 
         if c_done or p_done:
             break
-
     print("=" * 10 + "GAME OVER" + "=" * 10)
     print(f"The winner is: {winner[(c_done, p_done)]}")
+
+    print_stats(c_turn_times, p_turn_times, c_hits, p_hits, c_turns, p_turns)
+    return max(c_turns, p_turns)
 
 def player_turn(player_env, autoplay):
     """
@@ -81,6 +103,16 @@ def get_player_input(player_env, autoplay):
         except ValueError:
             print("Invalid input. Please enter a valid letter and number.")
 
+def print_stats(c_turn_times, p_turn_times, c_hits, p_hits, c_turns, p_turns):
+    # Print statistics
+    print("\n", "=" * 10 + "STATISTICS" + "=" * 10)
+    print("Computer average turn time: ", "{:.6f}".format(sum(c_turn_times) / len(c_turn_times)))
+    print("Player average turn time: ", "{:.6f}".format(sum(p_turn_times) / len(p_turn_times)))
+    print("Computer total turn time: ", "{:.6f}".format(sum(c_turn_times)))
+    print("Player total turn time: ", "{:.6f}".format(sum(p_turn_times)))
+    print("Computer hit ratio: ", f"{c_hits} / {c_turns}")
+    print("Player hit ratio: ", f"{p_hits} / {p_turns}")
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--board_size', type=int, help='The size of the board, default: 10', default=10)
@@ -88,18 +120,22 @@ if __name__ == '__main__':
     parser.add_argument('--monte_carlo_samples', type=int, help='The number of samples to get the algorithm to do, default: 10000', default=10000)
     parser.add_argument('--autoplay', help='Whether to autoplay the game or not, default: False', action='store_true')
     parser.add_argument('--ai_type', help='The type of AI to use, default: "monte_carlo"', default='monte_carlo')
+    parser.add_argument('--num_games', type=int, help='The number of games to play, default: 1', default=1)
     args = parser.parse_args()
 
     try:
-        print("Welcome to Battleship!")
-        print("Chosen args: ", args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples)
-        if args.ai_type == 'monte_carlo':
-            init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
-        elif args.ai_type == 'hunt_target':
-            init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
-        else:
-            print("Invalid AI type!")
-            exit(1)
+        total_turns = 0
+        for _ in range(args.num_games):
+            print("Welcome to Battleship!")
+            print("Chosen args: ", args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples)
+            if args.ai_type == 'monte_carlo':
+                total_turns += init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
+            elif args.ai_type == 'hunt_target':
+                total_turns += init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
+            else:
+                print("Invalid AI type!")
+                exit(1)
+        print(f"Average number of turns for AI to win over {args.num_games} games: {total_turns / args.num_games}")
     except:
         print("Incorrect Args!")
         exit(1)
