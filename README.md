@@ -35,6 +35,11 @@ The `main.py` file accepts the following arguments:
 - `--board_size`: Size of the board (default: `10`).
 - `--ship_sizes`: Array of ship sizes to randomly place (default: `5,4,3,3,2`).
 - `--monte_carlo_samples`: Number of samples for the algorithm to perform (default: `10000`).
+- `--ai_type`: Type of AI Computer Algorithm (default: `monte_carlo`).
+- `--autoplay`: Auto player target placement (default: `False`).
+
+Example:
+- `python main.py --board_size 8 --ship_sizes "4,3,2" --monte_carlo_samples 5000`
 
 For slower computers, reduce the number of samples, though generally, 10,000 should yield good results in reasonable time. Ensure there are no spaces between integers in `ship_sizes`. Extreme board sizes may exhibit unexpected behavior; the recommended range is 5-10, with adjustments to other parameters for sizes beyond this range.
 
