@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import random
 import time
+from csp import BattleshipCSP  # Import the BattleshipCSP class
 
 # Dictionary to map game outcomes to winners
 winner = {(True, False): 'Computer',
@@ -21,7 +22,17 @@ def init_game(size, ships, samples, autoplay, ai_type):
     """
     # Initialize AI and player game environments
     ai_env = Game(size, ships)
-    computer = AI(ai_env, samples, ai_type)
+    if ai_type == 'csp':  # If using CSP for ship configuration
+        csp = BattleshipCSP(size, ships)
+        solutions = csp.solve()
+        if solutions:
+            ai_env.defense_board.board = solutions[0]  # Use the first solution as ship configuration
+        else:
+            print("No valid ship configurations found using CSP.")
+            exit(1)
+    else:  # Use other types of AI
+        computer = AI(ai_env, samples, ai_type)
+
     player_env = Game(size, ships)
 
     # Initialize match statistics
@@ -35,7 +46,10 @@ def init_game(size, ships, samples, autoplay, ai_type):
     # Game loop until a player wins
     while True:
         start_time = time.time()
-        c_state, c_outcome, c_done = computer.move(ships)
+        if ai_type == 'csp':
+            c_state, c_outcome, c_done = computer_move(ai_env)  # Use predefined function for CSP-based AI move
+        else:
+            c_state, c_outcome, c_done = computer.move(ships)
         c_turn_times.append(time.time() - start_time)
         c_turns += 1
         if c_outcome == 'hit':
@@ -59,6 +73,13 @@ def init_game(size, ships, samples, autoplay, ai_type):
 
     print_stats(c_turn_times, p_turn_times, c_hits, p_hits, c_turns, p_turns)
     return max(c_turns, p_turns)
+
+def computer_move(ai_env):
+    """Computer's move using the CSP-based ship configuration."""
+    p_move = np.zeros(shape=[ai_env.size, ai_env.size])
+    x, y = ai_env.attack_board.get_best_move()  # Define your logic to get the best move
+    p_move[x, y] = 1
+    return ai_env.step(p_move)
 
 def player_turn(player_env, autoplay):
     """
@@ -131,6 +152,8 @@ if __name__ == '__main__':
             if args.ai_type == 'monte_carlo':
                 total_turns += init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
             elif args.ai_type == 'hunt_target':
+                total_turns += init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
+            elif args.ai_type == 'csp':  # Handle CSP-based AI
                 total_turns += init_game(args.board_size, [int(x) for x in args.ship_sizes.split(',')], args.monte_carlo_samples, args.autoplay, args.ai_type)
             else:
                 print("Invalid AI type!")
