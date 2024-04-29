@@ -1,6 +1,19 @@
 from colorama import Fore
+
 def printGrid(grid): #https://pypi.org/project/colorama/
-    print ("  ", end="")
+    """
+    Print the grid with colored symbols.
+
+    This function prints the grid with color-coded symbols:
+    - '~' for empty cells (blue color)
+    - Numbers (2, 3, 4, 5) for ships (green color)
+    - 'X' for hits (red color)
+
+    Args:
+        grid (list): The grid to print.
+
+    """
+    print("  ", end="")
     for i in range(len(grid[0])):
         print(Fore.YELLOW + str(i), end=" ")
     print(Fore.RESET)
